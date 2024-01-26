@@ -80,3 +80,76 @@ body {
     -webkit-transition: opacity .2s; /* Smooth transition for hover effect */
     transition: opacity .2s;
 }
+
+/* Large screens (Desktops) */
+@media (max-width: 1200px) {
+    #canvasContainer {
+        padding: 100px;
+        background-size: 800px 800px;
+    }
+
+    #paintCanvas {
+        width: 600px;
+        height: 360px;
+    }
+
+    .stamp {
+        width: 120px;
+    }
+}
+
+/* Medium screens (Tablets) */
+@media (max-width: 768px) {
+    #navbar, #bottomNavbar {
+        flex-direction: column;
+    }
+
+    .stamp {
+        width: 100px;
+    }
+
+    #canvasContainer {
+        padding: 50px;
+        background-size: 600px 600px;
+    }
+
+    #paintCanvas {
+        width: 450px;
+        height: 270px;
+    }
+
+    #bottomNavbar button {
+        font-size: 13px;
+        padding: 3px 10px;
+    }
+
+    #sizeSliderContainer label, #sizeSlider {
+        margin-left: 15px;
+    }
+}
+
+/* Small screens (Smartphones) */
+@media (max-width: 480px) {
+    .stamp {
+        width: 80px;
+    }
+
+    #canvasContainer {
+        padding: 20px;
+        background-size: 300px 300px;
+    }
+
+    #paintCanvas {
+        width: 300px;
+        height: 180px;
+    }
+
+    #bottomNavbar button {
+        font-size: 11px;
+        padding: 2px 5px;
+    }
+
+    #sizeSliderContainer label, #sizeSlider {
+        margin-left: 10px;
+    }
+}
