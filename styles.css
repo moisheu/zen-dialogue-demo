@@ -1,0 +1,82 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(to bottom, #f0f0f0, #808080);
+    margin: 0;
+    padding: 0;
+}
+
+#navbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+    padding: 5px;
+}
+
+.stamp {
+    margin: 0 30px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    height: auto; /* Maintain the aspect ratio of the images */
+    width: 150px; 
+}
+
+.stamp:hover {
+    transform: scale(1.1);
+}
+
+#canvasContainer {
+    display: flex;
+    justify-content: center;
+    background: url('assets/Scroll.png') no-repeat center center;
+    background-size: 1000px 1000px;
+    padding: 150px; 
+}
+
+#paintCanvas {
+    margin-top: -25px;
+    width: 750px;
+    height: 450px; 
+    background: linear-gradient(to right, #f0f0f0, #808080);
+}
+
+#bottomNavbar {
+    display: flex;
+    justify-content: space-around;
+    background: #666;
+    padding: 10px ;
+    color: white;
+}
+
+#bottomNavbar button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 5px 15px;
+    transition: background 0.2s, color 0.2s;
+}
+
+#bottomNavbar button:hover {
+    background: #555;
+    color: #ddd;
+}
+
+#sizeSliderContainer label {
+    display: block;
+    text-align: left;
+    margin-left: 25px;
+    margin-top: -25px;
+    color: #333; 
+    font-size: 18px; 
+}
+
+#sizeSlider {
+    margin-left: 25px;
+    margin-top: -5px;
+    outline: none; /* Remove the outline */
+    opacity: 0.7; /* Partial transparency */
+    -webkit-transition: opacity .2s; /* Smooth transition for hover effect */
+    transition: opacity .2s;
+}

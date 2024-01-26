@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Painting App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar for Stamps -->
+    <div id="navbar">
+        <img src="assets/kanji/bird.png" class="stamp"  id="bird" data-stamp="bird-stamp">
+        <img src="assets/kanji/flower.png" class="stamp" id="flower" data-stamp="flower-stamp">
+        <img src="assets/kanji/moon.png" class="stamp" id="moon" data-stamp="moon-stamp">
+        <img src="assets/kanji/mountain.png" class="stamp" id="mountain" data-stamp="mountain-stamp">
+        <img src="assets/kanji/person.png" class="stamp" id="person" data-stamp="person-stamp">
+        <img src="assets/kanji/rock.png" class="stamp" id="rock" data-stamp="rock-stamp">
+    </div>
+    
+    <!-- Drawing Canvas with Scroll Frame -->
+    <div id="canvasContainer">
+        <canvas id="paintCanvas"></canvas>
+    </div>
+    <div id="sizeSliderContainer">
+        <label for="sizeSlider">Stamp Size: </label>
+        <input type="range" id="sizeSlider" min="0.05" max="1.5" step="0.01" value="1">
+    </div>    
+
+    <!-- Bottom Navigation Bar -->
+    <div id="bottomNavbar">
+        <button id="delete">Delete</button>
+        <button id="translate">JP -> Eng</button>
+        <button id="changeBackground">Background</button>
+        <button id="saveCanvas">Save Canvas</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
