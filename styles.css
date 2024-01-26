@@ -14,7 +14,7 @@ body {
 }
 
 .stamp {
-    margin: 0 30px;
+    margin: 0 5px; 
     cursor: pointer;
     transition: transform 0.2s;
     height: auto; /* Maintain the aspect ratio of the images */
