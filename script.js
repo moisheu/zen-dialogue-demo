@@ -4,6 +4,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const history = []; //Array to hold the history of canvas states
     let index = -1; //Index to keep track of the current state
     let selectedStamp = null;
+    let currentStamp = null; //Object to hold the currently dragged stamp
+    let lastPlacedStamp = null; //Object to hold the last placed stamp
+    let draggingStamp = false; //Flag to track if a stamp is being dragged
+    let placedStamps = []; //Array to hold placed stamps
+    let selectedStampIndex = -1; //Index of the selected stamp in placedStamps
+    let isDragging = false;
+    let activeStamp = null;
 
     //Define the sources for each stamp type and third of the canvas
     const stampSources = {
@@ -21,6 +28,148 @@ document.addEventListener('DOMContentLoaded', function() {
         tree_bg: [('assets/picture/Tree_2 Background.png'),('assets/picture/Tree_2 Background.png'),('assets/picture/Tree_2 Background.png')],
         wiseman: [('assets/picture/wise man 1.png'),('assets/picture/wise man 1.png'),('assets/picture/wise man 2.png')]
     };
+
+    //Movement logic 
+    const navbar = document.getElementById('navbar');
+    let isMoving = false;
+
+    document.getElementById('navbarContainer').addEventListener('mousemove', function(e) {
+        const containerWidth = this.offsetWidth;
+        const mouseX = e.clientX;
+
+        if (mouseX < containerWidth * 0.1) { //10% area from the left
+            moveNavbar('right');
+        } else if (mouseX > containerWidth * 0.9) { //10% area from the right
+            moveNavbar('left');
+        } else {
+            stopMovingNavbar();
+        }
+    });
+
+    function moveNavbar(direction) {
+        if (isMoving) return;
+        isMoving = true;
+
+        let moveStep = 5; //Adjust step size for movement speed
+        if (direction === 'left') moveStep = -moveStep;
+
+        function step() {
+            let currentLeft = parseInt(navbar.style.left || 0);
+            currentLeft += moveStep;
+
+            //Stop moving if the edge of the navbar reaches the edge of the container
+            if ((moveStep < 0 && currentLeft < -navbar.scrollWidth + window.innerWidth) || 
+                (moveStep > 0 && currentLeft > 0)) {
+                stopMovingNavbar();
+                return;
+            }
+
+            navbar.style.left = `${currentLeft}px`;
+            if (isMoving) window.requestAnimationFrame(step);
+        }
+
+        step();
+    }
+
+    function stopMovingNavbar() {
+        isMoving = false;
+    }
+
+    document.querySelectorAll('.stamp').forEach(item => {
+        item.draggable = true;
+        item.addEventListener('dragstart', function(e) {
+            selectedStamp = this.id;
+            currentStamp = {
+                src: stampSources[selectedStamp][0], 
+                width: 0, 
+                height: 0, 
+                scaleFactor: 0
+            };
+            draggingStamp = true;
+        });
+    });
+
+    //Allow dropping on canvas
+    canvas.addEventListener('dragover', function(e) {
+        e.preventDefault();
+    });
+
+    canvas.addEventListener('drop', function(e) {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        if (currentStamp) {
+            drawStamp(x, y, true);
+            draggingStamp = false;
+        }
+    });
+
+    //Function to draw stamp
+    function drawStamp(stamp, save = false) {
+        const img = new Image();
+        img.src = stamp.src;
+        img.onload = function() {
+            const scaledWidth = img.width * stamp.scaleFactor;
+            const scaledHeight = img.height * stamp.scaleFactor;
+            ctx.drawImage(img, stamp.x - scaledWidth / 2, stamp.y - scaledHeight / 2, scaledWidth, scaledHeight);
+            if (save) {
+                placedStamps.push({...stamp, width: scaledWidth, height: scaledHeight, img: img});
+                saveState();
+            }
+        };
+    }
+
+    function calculateScaleFactor(x, y) {
+        const distanceFactor = y / canvas.height;
+        return parseFloat(sizeSlider.value) * distanceFactor;
+    }
+
+    //Click event to select a stamp for moving
+    canvas.addEventListener('mousedown', function(e) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        //Check if any stamp is clicked
+        const clickedStampIndex = placedStamps.findIndex(s => 
+            mouseX >= s.x - s.width / 2 && mouseX <= s.x + s.width / 2 &&
+            mouseY >= s.y - s.height / 2 && mouseY <= s.y + s.height / 2
+        );
+
+        if (clickedStampIndex !== -1) {
+            activeStamp = placedStamps[clickedStampIndex];
+            isDragging = true;
+            placedStamps.splice(clickedStampIndex, 1); //Remove the stamp from the array
+        }
+    });
+
+    //Mouse move event to drag a stamp
+    canvas.addEventListener('mousemove', function(e) {
+        if (!isDragging || !activeStamp) return;
+
+        const rect = this.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        //Update the position of the active stamp
+        activeStamp.x = mouseX;
+        activeStamp.y = mouseY;
+
+        //Redraw canvas with the updated stamp position
+        redrawCanvas();
+        drawStamp(activeStamp); //Draw the active stamp on top
+    });
+
+    //Mouse up event to drop the stamp
+    canvas.addEventListener('mouseup', function() {
+        if (isDragging && activeStamp) {
+            isDragging = false;
+            placedStamps.push(activeStamp); //Add the stamp back to the array
+            activeStamp = null;
+            saveState();
+        }
+    });
 
     //Initialize the canvas
     function initCanvas() {
@@ -131,8 +280,8 @@ document.getElementById('changeBackground').addEventListener('click', function()
 
 
     //Add a reference to the size slider element
-    const sizeSlider = document.getElementById('sizeSlider'); //Ensure this is the correct ID of your slider element
-
+    const sizeSlider = document.getElementById('sizeSlider'); 
+    
     function drawStamp(x, y) {
         if (!selectedStamp) {
             console.log("No stamp selected.");
@@ -161,16 +310,61 @@ document.getElementById('changeBackground').addEventListener('click', function()
             saveState(); //Save the state after stamping
         };
     }
+    
+    //Click event to select a stamp
+    canvas.addEventListener('mousedown', function(e) {
+        const rect = this.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
 
-    //Handle canvas clicks for stamping
-    canvas.addEventListener('click', function(e) {
-        if (selectedStamp) {
-            const rect = this.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            drawStamp(x, y);
+        //Find and select the stamp
+        selectedStampIndex = placedStamps.findIndex(s => 
+            mouseX >= s.x - s.width / 2 && mouseX <= s.x + s.width / 2 &&
+            mouseY >= s.y - s.height / 2 && mouseY <= s.y + s.height / 2
+        );
+
+        if (selectedStampIndex !== -1) {
+            isDragging = true;
         }
     });
+
+    //Mouse move event to drag a stamp
+    canvas.addEventListener('mousemove', function(e) {
+        if (!isDragging || selectedStampIndex === -1) return;
+        
+        const rect = this.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        //Update the position of the selected stamp
+        const stamp = placedStamps[selectedStampIndex];
+        stamp.x = mouseX;
+        stamp.y = mouseY;
+
+        //Redraw canvas with the updated stamp position
+        redrawCanvas();
+    });
+
+    //Mouse up event to drop the stamp
+    canvas.addEventListener('mouseup', function() {
+        if (isDragging) {
+            isDragging = false;
+            saveState();
+        }
+    });
+
+    //Function to redraw the canvas
+    function redrawCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        placedStamps.forEach(stamp => {
+            const img = new Image();
+            img.src = stamp.src;
+            img.onload = function() {
+                ctx.drawImage(img, stamp.x - stamp.width / 2, stamp.y - stamp.height / 2, stamp.width, stamp.height);
+            };
+        });
+    }
+
 
     //Clear the canvas
     document.getElementById('delete').addEventListener('click', function() {
